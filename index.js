@@ -84,13 +84,13 @@ async function getIssuesFromPR(inputs) {
       .then((result) => {
         core.info(`resilt success: ${result}`);
         core.info(result.data);
-        core.info(result.data.resource);
-        core.info(result.data.resource && result.data.resource.closingIssuesReferences);
+        core.info(result.data.getIssueNumbers);
+        core.info(result.data.getIssueNumbers && result.data.getIssueNumbers.resource);
         data = result.data;
       })
       .catch((e) => core.info(`issue with post: ${e.message}`));
     const issueNodes =
-      data && resource && closingIssuesReferences && nodes
+      data && getIssueNumbers && resource && closingIssuesReferences && nodes
         ? data.resource.closingIssuesReferences.nodes
         : [];
     core.info(`data-${issueNodes}`);
