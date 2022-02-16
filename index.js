@@ -79,7 +79,7 @@ async function getIssuesFromPR(inputs) {
         },
       }
     );
-    core.info(data);
+    core.info(result);
     const issueNodes =
       result && data && resource && closingIssuesReferences && nodes
         ? result.data.resource.closingIssuesReferences.nodes
