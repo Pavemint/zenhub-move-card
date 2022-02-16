@@ -64,7 +64,7 @@ async function getIssuesFromPR(inputs) {
   }`;
 
   try {
-    const data = null;
+    let data = null;
     axios
       .post(
         API_URL,
@@ -84,6 +84,8 @@ async function getIssuesFromPR(inputs) {
       .then((result) => {
         core.info(`resilt success: ${result}`);
         core.info(result.data);
+        core.info(result.data.resource);
+        core.info(result.data.resource && result.data.resource.closingIssuesReferences);
         data = result.data;
       })
       .catch((e) => core.info(`issue with post: ${e.message}`));
