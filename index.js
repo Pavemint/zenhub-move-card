@@ -46,7 +46,7 @@ async function getPipelineId(inputs) {
   return pipelineId;
 }
 
- async function getIssuesFromPR(inputs) {
+async function getIssuesFromPR(inputs) {
   const API_URL = 'https://api.github.com/graphql';
   const query = `query getIssueNumbers($url: URI!){
     resource(url: $url) {
@@ -64,7 +64,7 @@ async function getPipelineId(inputs) {
   }`;
 
   try {
-    const data = await axios.post(
+    const result = await axios.post(
       API_URL,
       {
         query,
@@ -79,7 +79,11 @@ async function getPipelineId(inputs) {
         },
       }
     );
-    const issueNodes = data.resource.closingIssueReferences.nodes;
+    core.info(data);
+    const issueNodes =
+      result && data && resource && closingIssuesReferences && nodes
+        ? result.data.resource.closingIssuesReferences.nodes
+        : [];
     core.info(`data-${issueNodes}`);
     return issueNodes;
   } catch (e) {
@@ -106,7 +110,7 @@ async function getPipelineId(inputs) {
       return;
     }
     const issues = await getIssuesFromPR(inputs);
-    core.info(`Issues- ${issues}`)
+    core.info(`Issues- ${issues}`);
     axios.defaults.headers.common['X-Authentication-Token'] = inputs.zhToken;
     const pipelineId = await getPipelineId(inputs);
 
