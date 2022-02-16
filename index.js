@@ -64,25 +64,32 @@ async function getIssuesFromPR(inputs) {
   }`;
 
   try {
-    const result = await axios.post(
-      API_URL,
-      {
-        query,
-        variables: {
-          url: inputs.prUrl,
+    const data = null;
+    axios
+      .post(
+        API_URL,
+        {
+          query,
+          variables: {
+            url: inputs.prUrl,
+          },
         },
-      },
-      {
-        headers: {
-          Authorization: 'Bearer ' + inputs.githubToken,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    core.info(JSON.stringify(result));
+        {
+          headers: {
+            Authorization: 'Bearer ' + inputs.githubToken,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      .then((result) => {
+        core.info(`resilt success: ${result}`);
+        core.info(result.data);
+        data = result.data;
+      })
+      .catch((e) => core.info(`issue with post: ${e.message}`));
     const issueNodes =
-      result && data && resource && closingIssuesReferences && nodes
-        ? result.data.resource.closingIssuesReferences.nodes
+      data && resource && closingIssuesReferences && nodes
+        ? data.resource.closingIssuesReferences.nodes
         : [];
     core.info(`data-${issueNodes}`);
     return issueNodes;
