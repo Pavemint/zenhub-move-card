@@ -83,14 +83,13 @@ async function getIssuesFromPR(inputs) {
       )
       .then((result) => {
         core.info(`resilt success: ${result}`);
-        core.info(result.data);
-        core.info(result.data.getIssueNumbers);
-        core.info(result.data.getIssueNumbers && result.data.getIssueNumbers.resource);
+        core.info(`schema?: ${result.data._schema}`);
+        core.info(`boop: ${result.data.resource}`);
         data = result.data;
       })
       .catch((e) => core.info(`issue with post: ${e.message}`));
     const issueNodes =
-      data && getIssueNumbers && resource && closingIssuesReferences && nodes
+      data && resource && closingIssuesReferences && nodes
         ? data.resource.closingIssuesReferences.nodes
         : [];
     core.info(`data-${issueNodes}`);
@@ -119,6 +118,7 @@ async function getIssuesFromPR(inputs) {
       return;
     }
     const issues = await getIssuesFromPR(inputs);
+    core.info(`Ises- ${isArray(issues) && issues.length && issues[0]}`);
     core.info(`Issues- ${issues}`);
     axios.defaults.headers.common['X-Authentication-Token'] = inputs.zhToken;
     const pipelineId = await getPipelineId(inputs);
