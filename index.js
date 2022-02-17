@@ -18,6 +18,7 @@ async function moveCardToPipeline(
 
 async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/board`;
+  core.info('about to hgrab pipeline id')
   const response = await axios.get(url);
   core.info(`GET ${url} -- [${response.status}]`);
   const pipelines = response.data.pipelines;
