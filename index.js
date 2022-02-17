@@ -64,9 +64,8 @@ async function getIssuesFromPR(inputs) {
   }`;
 
   try {
-    let data = null;
-    axios
-      .post(
+    try {
+      const result = await axios.post(
         API_URL,
         {
           query,
@@ -80,19 +79,21 @@ async function getIssuesFromPR(inputs) {
             'Content-Type': 'application/json',
           },
         }
-      )
-      .then((result) => {
-        core.info(`resilt success: ${result}`);
-        core.info(`schema?: ${result.data._schema}`);
-        core.info(`boop: ${result.data.resource}`);
-        data = result.data;
-      })
-      .catch((e) => core.info(`issue with post: ${e.message}`));
+      );
+    } catch (e) {
+      core.setFailed(`Eerriri iwht query ${e.message}`);
+    }
+    core.info(`resilt success: ${result}`);
+    core.info(`schema?: ${result.data._schema}`);
+    core.info(`boop: ${result.data.resource}`);
+    const data = result.data;
+
     const issueNodes =
       data && resource && closingIssuesReferences && nodes
         ? data.resource.closingIssuesReferences.nodes
         : [];
     core.info(`data-${issueNodes}`);
+    core.info(Array.isArray(issueNodes));
     return issueNodes;
   } catch (e) {
     core.setFailed(`Failed to get linked issues: ${e.message}`);
@@ -118,7 +119,7 @@ async function getIssuesFromPR(inputs) {
       return;
     }
     const issues = await getIssuesFromPR(inputs);
-    core.info(`Ises- ${isArray(issues) && issues.length && issues[0]}`);
+    core.info(`Ises- ${Array.isArray(issues) && issues.length && issues[0]}`);
     core.info(`Issues- ${issues}`);
     axios.defaults.headers.common['X-Authentication-Token'] = inputs.zhToken;
     const pipelineId = await getPipelineId(inputs);
