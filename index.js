@@ -19,7 +19,7 @@ async function moveCardToPipeline(
 async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/board`;
   const response = await axios.get(url);
-  console.log(`GET ${url} -- [${response.status}]`);
+  core.info(`GET ${url} -- [${response.status}]`);
   const pipelines = response.data.pipelines;
   const pipeline = pipelines.find(
     (pipeline) => pipeline.name.indexOf(pipelineName) !== -1
@@ -34,6 +34,7 @@ async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
 
 async function getPipelineId(inputs) {
   let pipelineId;
+  core.info('pipelont name', !!inputs.pipelineName)
   if (!inputs.pipelineId && inputs.pipelineName) {
     pipelineId = await getIdOfPipelineByName(
       inputs.zhRepoId,
@@ -43,6 +44,7 @@ async function getPipelineId(inputs) {
   } else {
     pipelineId = inputs.pipelineId;
   }
+  core.info(`pipee;nt id ${!!pipelineId}`)
   return pipelineId;
 }
 
