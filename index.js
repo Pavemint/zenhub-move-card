@@ -64,8 +64,9 @@ async function getIssuesFromPR(inputs) {
   }`;
 
   try {
+    let result;
     try {
-      const result = await axios.post(
+      result = await axios.post(
         API_URL,
         {
           query,
