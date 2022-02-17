@@ -85,14 +85,17 @@ async function getIssuesFromPR(inputs) {
       core.setFailed(`Eerriri iwht query ${e.message}`);
     }
     core.info(`resilt success: ${result}`);
-    core.info(`schema?: ${result.data._schema}`);
-    core.info(`boop: ${result.data.resource}`);
+    const keys = Object.keys(result)
+    const keysString = result.join(', ')
+    core.info(`result keys: ${keysString}`)
+    core.info(`schema?: ${JSON.stringify(result)}`);
     const data = result.data;
 
-    const issueNodes =
-      data && resource && closingIssuesReferences && nodes
-        ? data.resource.closingIssuesReferences.nodes
-        : [];
+    let issueNodes = [];
+
+    if (data && data.resource && data.resource.closingIssuesReferences) {
+      issueNodes = data.resource.closingIssuesReferences.nodes || [];
+    }
     core.info(`data-${issueNodes}`);
     core.info(Array.isArray(issueNodes));
     return issueNodes;
