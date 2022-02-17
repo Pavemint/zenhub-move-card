@@ -86,7 +86,7 @@ async function getIssuesFromPR(inputs) {
     }
     core.info(`resilt success: ${result}`);
     const keys = Object.keys(result)
-    const keysString = result.join(', ')
+    const keysString = keys.join(', ')
     core.info(`result keys: ${keysString}`)
     core.info(`schema?: ${JSON.stringify(result)}`);
     const data = result.data;
