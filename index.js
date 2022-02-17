@@ -97,6 +97,7 @@ async function getIssuesFromPR(inputs) {
     }
     core.info(`data-${issueNodes}`);
     core.info(Array.isArray(issueNodes));
+    core.info(JSON.stringify(issueNodes))
     return issueNodes;
   } catch (e) {
     core.setFailed(`Failed to get linked issues: ${e.message}`);
@@ -128,13 +129,13 @@ async function getIssuesFromPR(inputs) {
     const pipelineId = await getPipelineId(inputs);
 
     issues.forEach(async (issue) => {
+      core.info(`move issue ${issue.number} in ${issue.repository.id} to ${pipelineId}`);
       await moveCardToPipeline(
         issue.repository.id,
         inputs.zhWorkspaceId,
         issue.number,
         pipelineId
       );
-      core.info(`move issue ${issue.number} in ${issue.repo} to ${pipelineId}`);
     });
   } catch (err) {
     core.debug(inspect(err));
