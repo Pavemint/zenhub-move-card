@@ -18,8 +18,10 @@ async function moveCardToPipeline(
 
 async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/board`;
-  core.info('about to hgrab pipeline id')
-  const response = await axios.get(url);
+  core.info('about to hgrab pipeline id');
+  const response = await axios
+    .get(url)
+    .catch((e) => core.info(`error getting pipeline id ${e.message}`));
   core.info(`GET ${url} -- [${response.status}]`);
   const pipelines = response.data.pipelines;
   const pipeline = pipelines.find(
@@ -35,7 +37,7 @@ async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
 
 async function getPipelineId(inputs) {
   let pipelineId;
-  core.info('pipelont name', !!inputs.pipelineName)
+  core.info('pipelont name', !!inputs.pipelineName);
   if (!inputs.pipelineId && inputs.pipelineName) {
     pipelineId = await getIdOfPipelineByName(
       inputs.zhRepoId,
@@ -45,7 +47,7 @@ async function getPipelineId(inputs) {
   } else {
     pipelineId = inputs.pipelineId;
   }
-  core.info(`pipee;nt id ${!!pipelineId}`)
+  core.info(`pipee;nt id ${!!pipelineId}`);
   return pipelineId;
 }
 
@@ -88,9 +90,9 @@ async function getIssuesFromPR(inputs) {
       core.setFailed(`Eerriri iwht query ${e.message}`);
     }
     core.info(`resilt success: ${result}`);
-    const keys = Object.keys(result.data.data)
-    const keysString = keys.join(', ')
-    core.info(`result keys: ${keysString}`)
+    const keys = Object.keys(result.data.data);
+    const keysString = keys.join(', ');
+    core.info(`result keys: ${keysString}`);
     const data = result.data.data;
 
     let issueNodes = [];
@@ -98,7 +100,7 @@ async function getIssuesFromPR(inputs) {
     if (data && data.resource && data.resource.closingIssuesReferences) {
       issueNodes = data.resource.closingIssuesReferences.nodes || [];
     }
-    core.info(JSON.stringify(issueNodes))
+    core.info(JSON.stringify(issueNodes));
     return issueNodes;
   } catch (e) {
     core.setFailed(`Failed to get linked issues: ${e.message}`);
@@ -125,12 +127,14 @@ async function getIssuesFromPR(inputs) {
     }
     const issues = await getIssuesFromPR(inputs);
     axios.defaults.headers.common['X-Authentication-Token'] = inputs.zhToken;
-    core.info('GET PIPELIMNE IS')
+    core.info('GET PIPELIMNE IS');
     const pipelineId = await getPipelineId(inputs);
 
-    core.info('time for issues')
+    core.info('time for issues');
     issues.forEach(async (issue) => {
-      core.info(`move issue ${issue.number} in ${issue.repository.id} to ${pipelineId}`);
+      core.info(
+        `move issue ${issue.number} in ${issue.repository.id} to ${pipelineId}`
+      );
       await moveCardToPipeline(
         issue.repository.id,
         inputs.zhWorkspaceId,
@@ -138,7 +142,7 @@ async function getIssuesFromPR(inputs) {
         pipelineId
       );
     });
-    core.info('finished issues')
+    core.info('finished issues');
   } catch (err) {
     core.debug(inspect(err));
     core.setFailed(err.message);
