@@ -21,7 +21,7 @@ async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
   core.info('about to hgrab pipeline id');
   const response = await axios
     .get(url)
-    .catch((e) => core.info(`error getting pipeline id ${e.message}`));
+    .catch((e) => core.info(`error getting pipeline id ${e.message} but also possible - ${e.response.data}`));
   core.info(`GET ${url} -- [${response.status}]`);
   const pipelines = response.data.pipelines;
   const pipeline = pipelines.find(
