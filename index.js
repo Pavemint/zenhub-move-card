@@ -1,6 +1,7 @@
 const { default: axios } = require('axios');
 const core = require('@actions/core');
 const { inspect } = require('util');
+const { workerData } = require('worker_threads');
 
 async function moveCardToPipeline(
   repoId,
@@ -9,10 +10,14 @@ async function moveCardToPipeline(
   targetPipelineId
 ) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/issues/${issueId}/moves`;
-  const response = await axios.post(url, {
-    pipeline_id: targetPipelineId,
-    position: 'top',
-  });
+  const response = await axios
+    .post(url, {
+      pipeline_id: targetPipelineId,
+      position: 'top',
+    })
+    .catch((e) => {
+      core.info(`pipelomne issues:${JSON.stringify(e)}`);
+    });
   core.info(`POST ${url} -- [${response.status}]`);
 }
 
@@ -99,10 +104,6 @@ async function getIssuesFromPR(inputs) {
     } catch (e) {
       core.setFailed(`Eerriri iwht query ${e.message}`);
     }
-    core.info(`resilt success: ${result}`);
-    const keys = Object.keys(result.data.data);
-    const keysString = keys.join(', ');
-    core.info(`result keys: ${keysString}`);
     const data = result.data.data;
 
     let issueNodes = [];
