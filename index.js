@@ -19,15 +19,19 @@ async function moveCardToPipeline(
 async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/board`;
   core.info('about to hgrab pipeline id');
-  const response = await axios.get(url).catch((e) => {
-    core.info(
-      `error getting pipeline id ${
-        e.message
-      } but also possible - ${JSON.stringify(e.response.data)}`
-    );
-    core.info(e.response.statusText);
-    core.info(e.response.headers);
-  });
+  const response = await axios
+    .get(url)
+    .then((res) => console.log(JSON.stringify(res)))
+    .catch((e) => {
+      core.info(
+        `error getting pipeline id ${
+          e.message
+        } but also possible - ${JSON.stringify(e.response.data)}`
+      );
+      core.info(e.response.statusText);
+      core.info(JSON.stringify(e.response.headers));
+    });
+  core.info(`respomseeee: ${JSON.stringify(response)}`);
   core.info(`GET ${url} -- [${response.status}]`);
   const pipelines = response.data.pipelines;
   const pipeline = pipelines.find(
