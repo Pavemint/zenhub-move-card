@@ -11,10 +11,18 @@ async function moveCardToPipeline(
 ) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/issues/${issueId}/moves`;
   const response = await axios
-    .post(url, {
-      pipeline_id: targetPipelineId,
-      position: 'top',
-    })
+    .post(
+      url,
+      {
+        pipeline_id: targetPipelineId,
+        position: 'top',
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
     .catch((e) => {
       core.info(`pipelomne issues:${JSON.stringify(e)}`);
     });
