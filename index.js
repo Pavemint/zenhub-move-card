@@ -25,7 +25,7 @@ async function moveCardToPipeline(
 
     core.info(`POST ${url} -- [${JSON.stringify(response)}]`);
   } catch (e) {
-    core.setFailed(`moveCardToPipeline Error:${JSON.stringify(e)}`);
+    core.setFailed(`moveCardToPipeline Error:${JSON.stringify(e.message)}`);
   }
 }
 
@@ -135,13 +135,13 @@ async function getIssuesFromPR(inputs) {
     const pipelineId = await getPipelineId(inputs);
 
     issues.forEach(async (issue) => {
-      core.info(`move issue ${issue.number} in to ${pipelineId}`);
       await moveCardToPipeline(
         inputs.zhRepoId,
         inputs.zhWorkspaceId,
         issue.number,
         pipelineId
       );
+      core.info(`move issue ${issue.number}`);
     });
   } catch (err) {
     core.debug(inspect(err));
