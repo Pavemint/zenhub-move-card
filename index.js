@@ -9,17 +9,30 @@ async function moveCardToPipeline(
   targetPipelineId
 ) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/issues/${issueId}/moves`;
-  const response = await axios.post(url, {
-    pipeline_id: targetPipelineId,
-    position: 'top',
-  });
-  console.log(`POST ${url} -- [${response.status}]`);
+  try {
+    const response = await axios.post(
+      url,
+      {
+        pipeline_id: targetPipelineId,
+        position: 'top',
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    core.info(`POST ${url} -- [${response.status}]`);
+  } catch (e) {
+    core.setFailed(`moveCardToPipeline Error:${e.message}`);
+  }
 }
 
 async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/board`;
   const response = await axios.get(url);
-  console.log(`GET ${url} -- [${response.status}]`);
+  core.info(`GET ${url} -- [${JSON.stringify(response)}]`);
   const pipelines = response.data.pipelines;
   const pipeline = pipelines.find(
     (pipeline) => pipeline.name.indexOf(pipelineName) !== -1
@@ -64,9 +77,9 @@ async function getIssuesFromPR(inputs) {
   }`;
 
   try {
-    const data = null;
-    axios
-      .post(
+    let result;
+    try {
+      result = await axios.post(
         API_URL,
         {
           query,
@@ -80,18 +93,17 @@ async function getIssuesFromPR(inputs) {
             'Content-Type': 'application/json',
           },
         }
-      )
-      .then((result) => {
-        core.info(`resilt success: ${result}`);
-        core.info(result.data);
-        data = result.data;
-      })
-      .catch((e) => core.info(`issue with post: ${e.message}`));
-    const issueNodes =
-      data && resource && closingIssuesReferences && nodes
-        ? data.resource.closingIssuesReferences.nodes
-        : [];
-    core.info(`data-${issueNodes}`);
+      );
+    } catch (e) {
+      core.setFailed(`getIssuesFromPR Error: ${e.message}`);
+    }
+    const data = result.data.data;
+
+    let issueNodes = [];
+
+    if (data && data.resource && data.resource.closingIssuesReferences) {
+      issueNodes = data.resource.closingIssuesReferences.nodes || [];
+    }
     return issueNodes;
   } catch (e) {
     core.setFailed(`Failed to get linked issues: ${e.message}`);
@@ -108,6 +120,7 @@ async function getIssuesFromPR(inputs) {
       pipelineId: core.getInput('zh-target-pipeline-id'),
       pipelineName: core.getInput('zh-target-pipeline-name'),
       githubToken: core.getInput('github-token'),
+      zhRepoId: core.getInput('zh-repository-id'),
     };
     core.debug(`Inputs: ${inspect(inputs)}`);
     if (!inputs.pipelineId && !inputs.pipelineName) {
@@ -117,18 +130,17 @@ async function getIssuesFromPR(inputs) {
       return;
     }
     const issues = await getIssuesFromPR(inputs);
-    core.info(`Issues- ${issues}`);
     axios.defaults.headers.common['X-Authentication-Token'] = inputs.zhToken;
     const pipelineId = await getPipelineId(inputs);
 
     issues.forEach(async (issue) => {
+      core.info(`Move issue #${issue.number}`);
       await moveCardToPipeline(
-        issue.repository.id,
+        inputs.zhRepoId,
         inputs.zhWorkspaceId,
         issue.number,
         pipelineId
       );
-      core.info(`move issue ${issue.number} in ${issue.repo} to ${pipelineId}`);
     });
   } catch (err) {
     core.debug(inspect(err));
