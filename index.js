@@ -9,8 +9,8 @@ async function moveCardToPipeline(
   targetPipelineId
 ) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/issues/${issueId}/moves`;
-  const response = await axios
-    .post(
+  try {
+    await axios.post(
       url,
       {
         pipeline_id: targetPipelineId,
@@ -21,33 +21,18 @@ async function moveCardToPipeline(
           'Content-Type': 'application/json',
         },
       }
-    )
-    .then((res) => {
-      core.info(`move card res- ${JSON.stringify(res)}`);
-    })
-    .catch((e) => {
-      core.info(`pipelomne issues:${JSON.stringify(e)}`);
-    });
-  core.info(`POST ${url} -- [${response.status}]`);
+    );
+
+    core.info(`POST ${url} -- [${JSON.stringify(response)}]`);
+  } catch (e) {
+    core.setFailed(`moveCardToPipeline Error:${JSON.stringify(e)}`);
+  }
 }
 
 async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
   const url = `https://api.zenhub.com/p2/workspaces/${workspaceId}/repositories/${repoId}/board`;
-  core.info('about to hgrab pipeline id');
-  const response = await axios
-    .get(url)
-    .then((res) => console.log(JSON.stringify(res)))
-    .catch((e) => {
-      core.info(
-        `error getting pipeline id ${
-          e.message
-        } but also possible - ${JSON.stringify(e.response.data)}`
-      );
-      core.info(e.response.statusText);
-      core.info(JSON.stringify(e.response.headers));
-    });
-  core.info(`respomseeee: ${JSON.stringify(response)}`);
-  core.info(`GET ${url} -- [${response.status}]`);
+  const response = await axios.get(url);
+  core.info(`GET ${url} -- [${JSON.stringify(response)}]`);
   const pipelines = response.data.pipelines;
   const pipeline = pipelines.find(
     (pipeline) => pipeline.name.indexOf(pipelineName) !== -1
@@ -62,7 +47,6 @@ async function getIdOfPipelineByName(repoId, workspaceId, pipelineName) {
 
 async function getPipelineId(inputs) {
   let pipelineId;
-  core.info('pipelont name', !!inputs.pipelineName);
   if (!inputs.pipelineId && inputs.pipelineName) {
     pipelineId = await getIdOfPipelineByName(
       inputs.zhRepoId,
@@ -72,7 +56,6 @@ async function getPipelineId(inputs) {
   } else {
     pipelineId = inputs.pipelineId;
   }
-  core.info(`pipee;nt id ${!!pipelineId}`);
   return pipelineId;
 }
 
@@ -112,7 +95,7 @@ async function getIssuesFromPR(inputs) {
         }
       );
     } catch (e) {
-      core.setFailed(`Eerriri iwht query ${e.message}`);
+      core.setFailed(`getIssuesFromPR Error: ${e.message}`);
     }
     const data = result.data.data;
 
@@ -149,11 +132,8 @@ async function getIssuesFromPR(inputs) {
     }
     const issues = await getIssuesFromPR(inputs);
     axios.defaults.headers.common['X-Authentication-Token'] = inputs.zhToken;
-    core.info(`core axios-${JSON.stringify(axios.defaults.headers.common)}`);
-    core.info('GET PIPELIMNE IS');
     const pipelineId = await getPipelineId(inputs);
 
-    core.info('time for issues');
     issues.forEach(async (issue) => {
       core.info(`move issue ${issue.number} in to ${pipelineId}`);
       await moveCardToPipeline(
@@ -163,7 +143,6 @@ async function getIssuesFromPR(inputs) {
         pipelineId
       );
     });
-    core.info('finished issues');
   } catch (err) {
     core.debug(inspect(err));
     core.setFailed(err.message);
