@@ -23,7 +23,10 @@ async function moveCardToPipeline(
       }
     );
 
-    core.info(`POST ${url} -- [${JSON.stringify(response)}]`);
+    const keys = Object.keys(response)
+    const keysString = keys.join(', ')
+    core.info(`response keys: ${keysString}`)
+    core.info(`POST ${url} -- [${response.data.status}]`);
   } catch (e) {
     core.setFailed(`moveCardToPipeline Error:${JSON.stringify(e.message)}`);
   }
@@ -104,7 +107,6 @@ async function getIssuesFromPR(inputs) {
     if (data && data.resource && data.resource.closingIssuesReferences) {
       issueNodes = data.resource.closingIssuesReferences.nodes || [];
     }
-    core.info(JSON.stringify(issueNodes));
     return issueNodes;
   } catch (e) {
     core.setFailed(`Failed to get linked issues: ${e.message}`);
@@ -135,13 +137,13 @@ async function getIssuesFromPR(inputs) {
     const pipelineId = await getPipelineId(inputs);
 
     issues.forEach(async (issue) => {
+      core.info(`move issue ${issue.number}`);
       await moveCardToPipeline(
         inputs.zhRepoId,
         inputs.zhWorkspaceId,
         issue.number,
         pipelineId
       );
-      core.info(`move issue ${issue.number}`);
     });
   } catch (err) {
     core.debug(inspect(err));
