@@ -157,7 +157,7 @@ async function getIssuesFromPR(inputs) {
     issues.forEach(async (issue) => {
       core.info(`move issue ${issue.number} in to ${pipelineId}`);
       await moveCardToPipeline(
-        zhRepoId,
+        inputs.zhRepoId,
         inputs.zhWorkspaceId,
         issue.number,
         pipelineId
