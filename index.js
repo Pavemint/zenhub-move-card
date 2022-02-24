@@ -23,6 +23,9 @@ async function moveCardToPipeline(
         },
       }
     )
+    .then((res) => {
+      core.info(`move card res- ${JSON.stringify(res)}`);
+    })
     .catch((e) => {
       core.info(`pipelomne issues:${JSON.stringify(e)}`);
     });
