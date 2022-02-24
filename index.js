@@ -1,7 +1,6 @@
 const { default: axios } = require('axios');
 const core = require('@actions/core');
 const { inspect } = require('util');
-const { workerData } = require('worker_threads');
 
 async function moveCardToPipeline(
   repoId,
@@ -139,6 +138,7 @@ async function getIssuesFromPR(inputs) {
       pipelineId: core.getInput('zh-target-pipeline-id'),
       pipelineName: core.getInput('zh-target-pipeline-name'),
       githubToken: core.getInput('github-token'),
+      zhRepoId: core.getInput('zh-repository-id'),
     };
     core.debug(`Inputs: ${inspect(inputs)}`);
     if (!inputs.pipelineId && !inputs.pipelineName) {
@@ -155,11 +155,9 @@ async function getIssuesFromPR(inputs) {
 
     core.info('time for issues');
     issues.forEach(async (issue) => {
-      core.info(
-        `move issue ${issue.number} in ${issue.repository.id} to ${pipelineId}`
-      );
+      core.info(`move issue ${issue.number} in to ${pipelineId}`);
       await moveCardToPipeline(
-        issue.repository.id,
+        zhRepoId,
         inputs.zhWorkspaceId,
         issue.number,
         pipelineId

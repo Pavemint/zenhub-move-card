@@ -19,6 +19,9 @@ inputs:
   pr-url:
     description: 'pr url to parse issues'
     required: true
+  zh-repository-id:
+    description: 'zenhub repository id'
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'
